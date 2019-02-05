@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {% load static %}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}" />
+  <div class="wrapper fadeInDown">
+  <div id="formContent">
+    <!-- Tabs Titles -->
+
+    <!-- Icon -->
+    <div class="fadeIn first">
+      <img src="{% static 'images/favicon.png'%}" style="width:200px; height:200px; padding-top:10px; padding-bottom:10px;"/>
+    </div>
+
+    <!-- Login Form -->
+    <form method="post">
+      {% csrf_token %}
+      <input type="text" name="username" autofocus="" required="" id="id_username" class="fadeIn second" placeholder="Login">
+      <input type="password" name="password" class="fadeIn second" required id="id_password" placeholder="Password">
+
+      <button type="submit">Log In</button>
+    </form>
+
+    <!-- Remind Passowrd -->
+    <div id="formFooter">
+      <a class="underlineHover" href="#">Forgot Password?</a>
+    </div>
+
+  </div>
+</div>
+{% endblock content %}
