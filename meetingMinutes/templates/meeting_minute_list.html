@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+{% load crispy_forms_tags %}
+<!-- Custom fonts for this template-->
+<link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
+<!-- Custom styles for this template-->
+<link href="{% static 'css/sb-admin.css' %}" rel="stylesheet">
+
+<body id="page-top">
+
+  <!-- Navbar -->
+  {% include 'navbar.html' %}
+
+  <div id="wrapper">
+    <!-- Sidebar -->
+    {% include 'sidebar.html' %}
+
+    <div id="content-wrapper">
+      <div class="container-fluid">
+        <div class="card mb-3">
+          <div class="card-header">
+            <i class="fas fa-info-clock"></i>
+            Past Meeting Transcripts
+          </div>
+          <div class="card-body">
+            {% for object in object_list %}
+              <div><a href="{{ object.get_absolute_url }}">{{ object.title }}</a> created on {{ object.created_on }}</div>
+            {% endfor%}
+          </div>
+        </div>
+      </div>
+      <!-- /.container-fluid -->
+    </div>
+    <!-- /.content-wrapper -->
+
+  </div>
+  <!-- /#wrapper -->
+</body>
+
+{% endblock %}

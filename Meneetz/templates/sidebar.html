@@ -1,0 +1,24 @@
+<ul class="sidebar navbar-nav">
+  <li class="nav-item {% if request.path == '/' %}active{% endif %}">
+    <a class="nav-link" href="{% url 'home' %}">
+      <i class="fas fa-fw fa-tachometer-alt"></i>
+      <span>Dashboard</span>
+    </a>
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link" href="{% url 'list_meeting_minutes' %}">
+      <i class="fas fa-fw fa-scroll"></i>
+      <span>Past Transcripts</span></a>
+  </li>
+  <li class="nav-item {% if 'create' in request.path %}active{% endif %}">
+    <a class="nav-link" href="{% url 'create_meeting_minute' %}">
+      <i class="fas fa-fw fa-microphone-alt"></i>
+      <span>Record a New Meeting</span></a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="{% url 'login' %}">
+      <i class="fas fa-fw fa-sign-out-alt"></i>
+      <span>Logout</span></a>
+  </li>
+</ul>

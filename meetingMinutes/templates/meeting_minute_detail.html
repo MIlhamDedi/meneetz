@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+{% load crispy_forms_tags %}
+<!-- Custom fonts for this template-->
+<link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
+<!-- Custom styles for this template-->
+<link href="{% static 'css/sb-admin.css' %}" rel="stylesheet">
+
+<body id="page-top">
+
+  <!-- Navbar -->
+  {% include 'navbar.html' %}
+
+  <div id="wrapper">
+    <!-- Sidebar -->
+    {% include 'sidebar.html' %}
+
+    <div id="content-wrapper">
+      <div class="container-fluid">
+        <div class="card mb-3">
+          <div class="card-header">
+            <i class="fas fa-info-circle"></i>
+            Details of {{object.title}}
+          </div>
+          <div class="card-body">
+            <div>Created by: {{object.user.username}}</div>
+            <div>Created on: {{object.created_on}}</div>
+            <div>Meeting Transcript: {{object.meeting_transcript}}</div>
+          </div>
+        </div>
+      </div>
+      <!-- /.container-fluid -->
+    </div>
+    <!-- /.content-wrapper -->
+
+  </div>
+  <!-- /#wrapper -->
+</body>
+
+{% endblock %}
