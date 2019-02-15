@@ -102,3 +102,6 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# GOOGLE API CREDENTIALS
+Meneetz-7feea128c24c.json
