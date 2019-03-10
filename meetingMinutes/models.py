@@ -4,8 +4,6 @@ import subprocess
 
 # Imports the Google Cloud client library
 from google.cloud import speech_v1p1beta1 as speech
-from google.cloud.speech import enums
-from google.cloud.speech import types
 
 from django.db import models
 from django.urls import reverse
@@ -14,7 +12,7 @@ from django.db.models.signals import post_save, pre_save
 from django.conf import settings
 from django.utils.text import slugify
 
-recog_config = types.RecognitionConfig(
+recog_config = speech.types.RecognitionConfig(
     model='video',
     language_code='en-US',
     enable_automatic_punctuation=True,
@@ -58,7 +56,7 @@ def post_save_minute(sender, instance, created, update_fields=['meeting_transcri
     # loads the audio into memory
     with open(flac_file_path, 'rb') as audio_file:
         content = audio_file.read()
-        audio = types.RecognitionAudio(content=content)
+        audio = speech.types.RecognitionAudio(content=content)
 
     # detects speech in the audio file
     response = client.recognize(recog_config, audio)
