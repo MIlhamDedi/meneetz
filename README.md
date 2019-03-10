@@ -15,3 +15,4 @@ CZ3002 Assignment - Group Se7en
 4. Install dependencies: `pip install -r requirements.txt`.
 5. Set `meneetz` database in local Postgres and update `settings.py` user definition.
 6. Run first migration `python manage.py migrate` then run the project with `python manage.py runserver`.
+7. Run `export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service_account_file.json`

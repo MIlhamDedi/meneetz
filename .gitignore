@@ -105,3 +105,6 @@ venv.bak/
 
 # GOOGLE API CREDENTIALS
 Meneetz-7feea128c24c.json
+
+# Database stuff?
+voice_recordings

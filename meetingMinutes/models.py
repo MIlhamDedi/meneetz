@@ -1,9 +1,9 @@
-import io
+import json
 import os
 import subprocess
 
 # Imports the Google Cloud client library
-from google.cloud import speech
+from google.cloud import speech_v1p1beta1 as speech
 from google.cloud.speech import enums
 from google.cloud.speech import types
 
@@ -15,10 +15,12 @@ from django.conf import settings
 from django.utils.text import slugify
 
 recog_config = types.RecognitionConfig(
-encoding=enums.RecognitionConfig.AudioEncoding.FLAC,
-sample_rate_hertz=16000,
-model='video',
-language_code='en-US')
+    model='video',
+    language_code='en-US',
+    enable_automatic_punctuation=True,
+    enable_speaker_diarization=True,
+    diarization_speaker_count=2
+)
 
 def user_directory_path(instance, filename):
     return 'user_{0}/{1}'.format(instance.user.id, filename)
@@ -50,23 +52,38 @@ def post_save_minute(sender, instance, created, update_fields=['meeting_transcri
     voice_file_path = os.path.join(settings.MEDIA_ROOT, str(instance.voice_recording_file))
     flac_file_name = str(instance.voice_recording_file).split('.')[0] + '.flac'
     flac_file_path = os.path.join(settings.MEDIA_ROOT, flac_file_name)
-    convert_cmd = 'sox {} --rate 16k --bits 16 --channels 1 {}'.format(voice_file_path, flac_file_path)
+    convert_cmd = 'ffmpeg -i {} {}'.format(voice_file_path, flac_file_path)
     subprocess.run(convert_cmd, shell=True)
 
     # loads the audio into memory
-    with io.open(flac_file_path, 'rb') as audio_file:
+    with open(flac_file_path, 'rb') as audio_file:
         content = audio_file.read()
         audio = types.RecognitionAudio(content=content)
 
     # detects speech in the audio file
     response = client.recognize(recog_config, audio)
 
-    for result in response.results:
-        print('Transcript: {}'.format(result.alternatives[0].transcript))
-        voice_transcript = result.alternatives[0].transcript
+    # Last transcript contains all the world. So, this is fine.
+    result = response.results[-1]
+    words_info = result.alternatives[0].words
+    voice_transcript = ""
+    speaker_tag = 0 # Random number
+    for word_info in words_info:
+        whitespace = ' '
+        if (word_info.speaker_tag != speaker_tag):
+            whitespace = '\n{}: '.format(word_info.speaker_tag)
+        speaker_tag = word_info.speaker_tag
+        voice_transcript += ("{}{}".format(whitespace, word_info.word))
+    voice_transcript = voice_transcript.lstrip()
+    json_voice_transcript = []
+    for line in voice_transcript.split('\n'):
+        json_voice_transcript.append({line.split(":", 1)[0]: line.split(":",1)[1].lstrip()})
+    json_voice_transcript = json.dumps(json_voice_transcript)
+
+    # print(voice_transcript)
 
     # update the meeting transcript for the meeting
-    MeetingMinute.objects.filter(id=instance.id).update(meeting_transcript=voice_transcript)
+    MeetingMinute.objects.filter(id=instance.id).update(meeting_transcript=json_voice_transcript)
 
 # pre_save.connect(pre_save_minute, sender=MeetingMinute)
 post_save.connect(post_save_minute, sender=MeetingMinute)
