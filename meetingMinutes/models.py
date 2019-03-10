@@ -77,7 +77,7 @@ def post_save_minute(sender, instance, created, update_fields=['meeting_transcri
     voice_transcript = voice_transcript.lstrip()
     json_voice_transcript = []
     for line in voice_transcript.split('\n'):
-        json_voice_transcript.append({line.split(":", 1)[0]: line.split(":",1)[1].lstrip()})
+        json_voice_transcript.append({"id":line.split(":", 1)[0], "msg": line.split(":",1)[1].lstrip()})
     json_voice_transcript = json.dumps(json_voice_transcript)
 
     # print(voice_transcript)
