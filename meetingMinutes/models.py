@@ -1,6 +1,8 @@
 import json
 import os
+import re
 import subprocess
+from . import summarizer
 
 # Imports the Google Cloud client library
 from google.cloud import speech_v1p1beta1 as speech
@@ -12,13 +14,6 @@ from django.db.models.signals import post_save, pre_save
 from django.conf import settings
 from django.utils.text import slugify
 
-recog_config = speech.types.RecognitionConfig(
-    model='video',
-    language_code='en-US',
-    enable_automatic_punctuation=True,
-    enable_speaker_diarization=True,
-    diarization_speaker_count=2
-)
 
 def user_directory_path(instance, filename):
     return 'user_{0}/{1}'.format(instance.user.id, filename)
@@ -30,6 +25,8 @@ class MeetingMinute(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     voice_recording_file = models.FileField(upload_to=user_directory_path, verbose_name='Voice Recording File')
     meeting_transcript = models.TextField(null=True, blank=True, verbose_name='Meeting Transcript')
+    meeting_summary = models.TextField(null=True, blank=True, verbose_name='Meeting Summary')
+    speaker_count = models.IntegerField(verbose_name="Speaker Count")
 
     class Meta:
         verbose_name = 'Meeting Minute'
@@ -59,6 +56,14 @@ def post_save_minute(sender, instance, created, update_fields=['meeting_transcri
         audio = speech.types.RecognitionAudio(content=content)
 
     # detects speech in the audio file
+    recog_config = speech.types.RecognitionConfig(
+        model='video',
+        language_code='en-US',
+        enable_automatic_punctuation=True,
+        enable_speaker_diarization=True,
+        diarization_speaker_count=instance.speaker_count
+    )
+
     response = client.recognize(recog_config, audio)
 
     # Last transcript contains all the world. So, this is fine.
@@ -77,11 +82,14 @@ def post_save_minute(sender, instance, created, update_fields=['meeting_transcri
     for line in voice_transcript.split('\n'):
         json_voice_transcript.append({"id":line.split(":", 1)[0], "msg": line.split(":",1)[1].lstrip()})
     json_voice_transcript = json.dumps(json_voice_transcript)
+    formatted_transcript = re.sub(r"\n\d+:", "\n", "\n"+voice_transcript).lstrip()
+    transcript_summary = summarizer.summarize_text(formatted_transcript)
 
     # print(voice_transcript)
 
     # update the meeting transcript for the meeting
     MeetingMinute.objects.filter(id=instance.id).update(meeting_transcript=json_voice_transcript)
+    MeetingMinute.objects.filter(id=instance.id).update(meeting_summary=transcript_summary)
 
 # pre_save.connect(pre_save_minute, sender=MeetingMinute)
 post_save.connect(post_save_minute, sender=MeetingMinute)
